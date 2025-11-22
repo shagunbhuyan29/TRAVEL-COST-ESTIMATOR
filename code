@@ -1,0 +1,127 @@
+import csv
+import os
+import matplotlib.pyplot as plt
+
+# Predefined vehicle mileages
+vehicles = {
+    "Car (Petrol)": 15,
+    "Car (Diesel)": 20,
+    "Bike": 40
+}
+
+# Fuel prices per litre
+fuel_prices = {
+    "Petrol": 100,
+    "Diesel": 90,
+    "CNG": 60
+}
+
+# CSV file for saving history
+history_file = "trip_history.csv"
+
+def get_distance():
+    while True:
+        try:
+            distance = float(input("Enter distance of the trip (km): "))
+            if distance <= 0:
+                print("Distance must be positive!")
+            else:
+                return distance
+        except ValueError:
+            print("Invalid input. Please enter a numeric value.")
+
+def select_vehicle():
+    print("\nSelect Vehicle Type:")
+    for i, v in enumerate(vehicles, 1):
+        print(f"{i}. {v}")
+    while True:
+        choice = input("Enter choice number: ")
+        if choice.isdigit() and 1 <= int(choice) <= len(vehicles):
+            return list(vehicles.keys())[int(choice)-1]
+        print("Invalid choice. Try again.")
+
+def select_fuel():
+    print("\nSelect Fuel Type:")
+    for i, f in enumerate(fuel_prices, 1):
+        print(f"{i}. {f}")
+    while True:
+        choice = input("Enter choice number: ")
+        if choice.isdigit() and 1 <= int(choice) <= len(fuel_prices):
+            return list(fuel_prices.keys())[int(choice)-1]
+        print("Invalid choice. Try again.")
+
+def get_optional_cost(prompt):
+    while True:
+        try:
+            val = input(prompt + " (enter 0 if none): ")
+            val = float(val)
+            if val < 0:
+                print("Cost cannot be negative!")
+            else:
+                return val
+        except ValueError:
+            print("Invalid input. Enter a number.")
+
+def calculate_total_cost(distance, mileage, fuel_price, toll, maintenance, city_percent, highway_percent):
+    effective_mileage = (mileage * city_percent + mileage * highway_percent) / 100
+    fuel_cost = (distance / effective_mileage) * fuel_price
+    total_cost = fuel_cost + toll + (distance * maintenance)
+    return fuel_cost, total_cost
+
+def save_trip_history(distance, vehicle, fuel, toll, maintenance, total_cost):
+    file_exists = os.path.isfile(history_file)
+    with open(history_file, 'a', newline='') as f:
+        writer = csv.writer(f)
+        if not file_exists:
+            writer.writerow(["Distance", "Vehicle", "Fuel", "Toll", "Maintenance", "Total Cost"])
+        writer.writerow([distance, vehicle, fuel, toll, maintenance, total_cost])
+
+def plot_cost_breakdown(fuel_cost, toll, maintenance_cost):
+    labels = ['Fuel Cost', 'Toll', 'Maintenance']
+    costs = [fuel_cost, toll, maintenance_cost]
+    plt.figure(figsize=(6,4))
+    plt.pie(costs, labels=labels, autopct='%1.1f%%', startangle=140)
+    plt.title("Trip Cost Breakdown")
+    plt.show()
+
+def main():
+    print("===== Travel Cost Estimator =====\n")
+    
+    distance = get_distance()
+    vehicle = select_vehicle()
+    fuel = select_fuel()
+    
+    toll = get_optional_cost("Enter Toll Charges")
+    maintenance = get_optional_cost("Enter Maintenance Cost per km")
+    
+    # City/highway percentage
+    while True:
+        try:
+            city_percent = float(input("Enter percentage of city driving (0-100): "))
+            highway_percent = 100 - city_percent
+            if 0 <= city_percent <= 100:
+                break
+            else:
+                print("Enter a value between 0 and 100")
+        except ValueError:
+            print("Invalid input. Enter a numeric value.")
+    
+    mileage = vehicles[vehicle]
+    fuel_price = fuel_prices[fuel]
+    
+    fuel_cost, total_cost = calculate_total_cost(distance, mileage, fuel_price, toll, maintenance, city_percent, highway_percent)
+    
+    print("\n===== Trip Estimate =====")
+    print(f"Fuel Cost: {fuel_cost:.2f}")
+    print(f"Total Trip Cost: {total_cost:.2f}")
+    
+    save_trip_history(distance, vehicle, fuel, toll, maintenance, total_cost)
+    
+    # Optional: plot pie chart
+    plot_choice = input("Do you want a cost breakdown chart? (y/n): ").lower()
+    if plot_choice == 'y':
+        maintenance_cost_total = distance * maintenance
+        plot_cost_breakdown(fuel_cost, toll, maintenance_cost_total)
+
+if __name__ == "__main__":
+    main()
