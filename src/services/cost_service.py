@@ -13,3 +13,13 @@ class TravelCostService:
         
         return base_cost * multiplier
 
+class CostService:
+    def fuel_needed(self, distance, mileage):
+        if mileage == 0:
+            raise ValueError("Mileage cannot be zero")
+        return distance / mileage
+
+    def fuel_cost(self, fuel_needed, price):
+        return fuel_needed * price
+
+
