@@ -1,1 +1,5 @@
+pytest
+reportlab
+matplotlib
+ipykernel
 
