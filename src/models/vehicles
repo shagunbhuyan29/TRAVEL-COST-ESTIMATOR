@@ -1,1 +1,8 @@
+class Vehicle:
+    def __init__(self, vehicle_type: str, mileage: float):
+        self.vehicle_type = vehicle_type
+        self.mileage = mileage
+
+    def __repr__(self):
+        return f"Vehicle(type={self.vehicle_type}, mileage={self.mileage})"
 
