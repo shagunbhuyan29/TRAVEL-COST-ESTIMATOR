@@ -1,5 +1,0 @@
-{
-  "car": { "mileage": 15 },
-  "bike": { "mileage": 40 },
-  "truck": { "mileage": 8 }
-}
